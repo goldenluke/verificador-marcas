@@ -5,33 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Análise de Marcas INPI (Node.js + Tailwind)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Configurações customizadas do Tailwind (opcional)
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#007bff',
-                        secondary: '#6c757d',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        /* Estilo customizado para o loader, já que o Tailwind não o inclui por padrão */
         .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            border: 5px solid #f3f3f3; border-top: 5px solid #3498db;
+            border-radius: 50%; width: 40px; height: 40px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="h-full">
@@ -42,7 +22,7 @@
                     🔎 Ferramenta de Análise de Marcas no INPI
                 </h1>
                 <p class="mt-2 text-center text-sm text-gray-600">
-                    Construído com Node.js e Tailwind CSS
+                    Credenciais: vinicalvs (fixo no código)
                 </p>
             </div>
 
@@ -56,16 +36,7 @@
             <div>
                 <div id="tab1" class="tab-content active">
                     <h2 class="text-xl font-semibold mb-4">A marca já foi registrada? (Pesquisa em Lote)</h2>
-                    <p class="text-sm text-gray-600 mb-4">Insira uma lista de marcas (uma por linha) para verificar em lote se alguma delas possui registro ativo.</p>
                     <form id="form-verificacao-lote" class="space-y-4">
-                        <div>
-                            <label for="login-lote" class="block text-sm font-medium text-gray-700">Login INPI:</label>
-                            <input type="text" id="login-lote" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="senha-lote" class="block text-sm font-medium text-gray-700">Senha INPI:</label>
-                            <input type="password" id="senha-lote" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                        </div>
                         <div>
                             <label for="marcas-lote" class="block text-sm font-medium text-gray-700">Marcas para Verificar (uma por linha):</label>
                             <textarea id="marcas-lote" rows="6" placeholder="Marca Exemplo 1&#10;Tecnologia Azul" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
@@ -78,16 +49,7 @@
 
                 <div id="tab2" class="tab-content hidden">
                     <h2 class="text-xl font-semibold mb-4">Pesquisa Detalhada de Processos</h2>
-                    <p class="text-sm text-gray-600 mb-4">Busque por uma única marca e veja todos os processos relacionados.</p>
                     <form id="form-busca-completa" class="space-y-4">
-                        <div>
-                            <label for="login-busca" class="block text-sm font-medium text-gray-700">Login INPI:</label>
-                            <input type="text" id="login-busca" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="senha-busca" class="block text-sm font-medium text-gray-700">Senha INPI:</label>
-                            <input type="password" id="senha-busca" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                        </div>
                         <div>
                             <label for="marca-busca" class="block text-sm font-medium text-gray-700">Nome da Marca para Buscar:</label>
                             <input type="text" id="marca-busca" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
@@ -96,11 +58,11 @@
                             <legend class="text-sm font-medium text-gray-700">Tipo de Pesquisa:</legend>
                             <div class="mt-2 space-x-4">
                                 <label class="inline-flex items-center">
-                                    <input type="radio" name="tipoBusca" value="Radical" checked class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <input type="radio" name="tipoBusca" value="Radical" checked>
                                     <span class="ml-2 text-sm text-gray-600">Radical</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="radio" name="tipoBusca" value="Exata" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <input type="radio" name="tipoBusca" value="Exata">
                                     <span class="ml-2 text-sm text-gray-600">Exata</span>
                                 </label>
                             </div>
@@ -133,48 +95,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             const tabs = document.querySelectorAll('.tab-button');
             const tabContents = document.querySelectorAll('.tab-content');
-
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                    // Desativa todas as abas e conteúdos
                     tabs.forEach(item => item.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active', 'hidden'));
                     tabContents.forEach(content => content.classList.add('hidden'));
-
-                    // Ativa a aba e o conteúdo clicado
                     tab.classList.add('active');
-                    const target = document.getElementById(tab.dataset.tab);
-                    target.classList.remove('hidden');
-                    target.classList.add('active');
+                    document.getElementById(tab.dataset.tab).classList.remove('hidden');
                 });
             });
-
-            // Estilos customizados para as abas (injetados via JS)
-            document.head.insertAdjacentHTML("beforeend", `
-            <style>
-                .tab-button {
-                    color: #6b7280;
-                    border-bottom: 2px solid transparent;
-                    padding-bottom: 0.5rem;
-                    font-weight: 500;
-                    transition: all 0.2s;
-                }
-                .tab-button:hover {
-                    color: #374151;
-                    border-color: #d1d5db;
-                }
-                .tab-button.active {
-                    color: #4f46e5;
-                    border-color: #4f46e5;
-                }
-                .tab-content.hidden {
-                    display: none;
-                }
-                .tab-content.active {
-                    display: block;
-                }
-            </style>
-            `);
+            document.head.insertAdjacentHTML("beforeend", `<style>.tab-button{color:#6b7280;border-bottom:2px solid transparent;padding-bottom:0.5rem;font-weight:500;transition:all .2s}.tab-button:hover{color:#374151;border-color:#d1d5db}.tab-button.active{color:#4f46e5;border-color:#4f46e5}.tab-content.hidden{display:none}</style>`);
         });
     </script>
 </body>

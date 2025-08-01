@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Marcas INPI (Node.js + Tailwind)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configurações customizadas do Tailwind (opcional)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007bff',
+                        secondary: '#6c757d',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilo customizado para o loader, já que o Tailwind não o inclui por padrão */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="h-full">
+    <div class="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="w-full max-w-2xl space-y-8 p-8 bg-white shadow-lg rounded-xl">
+            <div>
+                <h1 class="text-center text-3xl font-bold tracking-tight text-gray-900">
+                    🔎 Ferramenta de Análise de Marcas no INPI
+                </h1>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Construído com Node.js e Tailwind CSS
+                </p>
+            </div>
+
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                    <button class="tab-button active" data-tab="tab1">Verificação em Lote</button>
+                    <button class="tab-button" data-tab="tab2">Busca Completa Individual</button>
+                </nav>
+            </div>
+
+            <div>
+                <div id="tab1" class="tab-content active">
+                    <h2 class="text-xl font-semibold mb-4">A marca já foi registrada? (Pesquisa em Lote)</h2>
+                    <p class="text-sm text-gray-600 mb-4">Insira uma lista de marcas (uma por linha) para verificar em lote se alguma delas possui registro ativo.</p>
+                    <form id="form-verificacao-lote" class="space-y-4">
+                        <div>
+                            <label for="login-lote" class="block text-sm font-medium text-gray-700">Login INPI:</label>
+                            <input type="text" id="login-lote" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="senha-lote" class="block text-sm font-medium text-gray-700">Senha INPI:</label>
+                            <input type="password" id="senha-lote" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="marcas-lote" class="block text-sm font-medium text-gray-700">Marcas para Verificar (uma por linha):</label>
+                            <textarea id="marcas-lote" rows="6" placeholder="Marca Exemplo 1&#10;Tecnologia Azul" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                        </div>
+                        <button type="submit" class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            Verificar Marcas em Lote
+                        </button>
+                    </form>
+                </div>
+
+                <div id="tab2" class="tab-content hidden">
+                    <h2 class="text-xl font-semibold mb-4">Pesquisa Detalhada de Processos</h2>
+                    <p class="text-sm text-gray-600 mb-4">Busque por uma única marca e veja todos os processos relacionados.</p>
+                    <form id="form-busca-completa" class="space-y-4">
+                        <div>
+                            <label for="login-busca" class="block text-sm font-medium text-gray-700">Login INPI:</label>
+                            <input type="text" id="login-busca" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="senha-busca" class="block text-sm font-medium text-gray-700">Senha INPI:</label>
+                            <input type="password" id="senha-busca" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="marca-busca" class="block text-sm font-medium text-gray-700">Nome da Marca para Buscar:</label>
+                            <input type="text" id="marca-busca" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <fieldset>
+                            <legend class="text-sm font-medium text-gray-700">Tipo de Pesquisa:</legend>
+                            <div class="mt-2 space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="tipoBusca" value="Radical" checked class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="ml-2 text-sm text-gray-600">Radical</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="tipoBusca" value="Exata" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="ml-2 text-sm text-gray-600">Exata</span>
+                                </label>
+                            </div>
+                        </fieldset>
+                        <button type="submit" class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            Buscar Processos
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="status-container" class="hidden text-center py-4">
+                <div class="loader mx-auto mb-2"></div>
+                <p id="status-text" class="text-sm text-gray-600"></p>
+            </div>
+            <div id="results-container" class="hidden mt-6">
+                <h2 id="results-title" class="text-lg font-medium text-gray-900 mb-4">Resultados</h2>
+                <div class="overflow-x-auto rounded-lg border">
+                    <table id="results-table" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50"></thead>
+                        <tbody class="divide-y divide-gray-200 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Desativa todas as abas e conteúdos
+                    tabs.forEach(item => item.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active', 'hidden'));
+                    tabContents.forEach(content => content.classList.add('hidden'));
+
+                    // Ativa a aba e o conteúdo clicado
+                    tab.classList.add('active');
+                    const target = document.getElementById(tab.dataset.tab);
+                    target.classList.remove('hidden');
+                    target.classList.add('active');
+                });
+            });
+
+            // Estilos customizados para as abas (injetados via JS)
+            document.head.insertAdjacentHTML("beforeend", `
+            <style>
+                .tab-button {
+                    color: #6b7280;
+                    border-bottom: 2px solid transparent;
+                    padding-bottom: 0.5rem;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                }
+                .tab-button:hover {
+                    color: #374151;
+                    border-color: #d1d5db;
+                }
+                .tab-button.active {
+                    color: #4f46e5;
+                    border-color: #4f46e5;
+                }
+                .tab-content.hidden {
+                    display: none;
+                }
+                .tab-content.active {
+                    display: block;
+                }
+            </style>
+            `);
+        });
+    </script>
+</body>
+</html>

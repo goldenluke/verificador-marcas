@@ -10,6 +10,8 @@ Uma aplicação web para automatizar a consulta de marcas no portal do Instituto
   * **Scraping Robusto:** A lógica de backend em Node.js é projetada para ser resiliente a pequenas mudanças no layout do site do INPI.
   * **Gerenciamento Seguro de Credenciais:** As credenciais de login não ficam expostas no código, sendo gerenciadas de forma segura através de variáveis de ambiente.
 
+  * Demonstração: https://verificador-inpi.onrender.com/
+    
 ## 🚀 Tecnologias Utilizadas
 
 Este projeto é dividido em um backend e um frontend:

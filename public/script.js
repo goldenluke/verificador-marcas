@@ -1,28 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Seletores para os elementos da UI ---
     const statusContainer = document.getElementById('status-container');
     const statusText = document.getElementById('status-text');
     const resultsContainer = document.getElementById('results-container');
     const resultsTable = document.getElementById('results-table');
     const resultsTitle = document.getElementById('results-title');
 
-    // --- Lógica do Formulário 1: Verificação em Lote ---
+    // Formulário 1: Verificação em Lote
     const formVerificacao = document.getElementById('form-verificacao-lote');
     formVerificacao.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const marcasInput = document.getElementById('marcas-lote').value;
+        const marcas = marcasInput.split('\n').map(m => m.trim()).filter(m => m);
 
-        // CORREÇÃO: Primeiro pegamos o elemento, depois o valor.
-        const marcasTextarea = document.getElementById('marcas-lote');
-        if (!marcasTextarea) {
-            showError("Erro interno: Elemento 'marcas-lote' não encontrado no HTML.");
-            return;
-        }
-        const marcas = marcasTextarea.value.split('\n').map(m => m.trim()).filter(m => m);
-
-        if (marcas.length === 0) {
-            alert('Insira pelo menos uma marca na lista.');
-            return;
-        }
+        if (marcas.length === 0) { return alert('Insira pelo menos uma marca.'); }
 
         showLoading('Iniciando verificação em lote...');
         try {
@@ -34,35 +24,32 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error((await response.json()).error);
 
                                      const resultados = await response.json();
-            const headers = ['Marca Pesquisada', 'Possui Registro Ativo?', 'Status Encontrado', 'Titular do Registro', 'Marca Conflitante Encontrada'];
+
+            // --- CABEÇALHO ATUALIZADO ---
+            const headers = ['Marca Pesquisada', 'Possui Registro Ativo?', 'Nº de Correspondências', 'Status Encontrado', 'Titular do Registro', 'Marca Conflitante Encontrada'];
+
+            // --- MAPEAMENTO DE DADOS ATUALIZADO ---
             const data = resultados.map(res => ({
                 'Marca Pesquisada': res.marca_pesquisada,
                 'Possui Registro Ativo?': res.registrada === 'erro' ? 'Erro' : (res.registrada ? 'Sim' : 'Não'),
+                                                'Nº de Correspondências': res.correspondencias, // Nova coluna
                                                 'Status Encontrado': res.status,
                                                 'Titular do Registro': res.titular,
                                                 'Marca Conflitante Encontrada': res.marca_encontrada
             }));
+
             displayResults("Resultado da Análise em Lote", headers, data);
         } catch (error) {
             showError(error.message);
         }
     });
 
-    // --- Lógica do Formulário 2: Busca Completa Individual ---
+    // Formulário 2: Busca Completa
     const formBusca = document.getElementById('form-busca-completa');
     formBusca.addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        // CORREÇÃO: Lógica mais segura para pegar os valores.
-        const marcaInput = document.getElementById('marca-busca');
-        const tipoBuscaInput = document.querySelector('input[name="tipoBusca"]:checked');
-
-        if (!marcaInput || !tipoBuscaInput) {
-            showError("Erro interno: Elementos do formulário de busca não encontrados.");
-            return;
-        }
-        const marca = marcaInput.value;
-        const tipoBusca = tipoBuscaInput.value;
+        const marca = document.getElementById('marca-busca').value;
+        const tipoBusca = document.querySelector('input[name="tipoBusca"]:checked').value;
 
         showLoading(`Buscando por "${marca}"...`);
         try {
@@ -85,35 +72,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Funções Auxiliares para manipular a UI ---
+    // Funções auxiliares da UI (sem alterações)
     function showLoading(message) {
         resultsContainer.classList.add('hidden');
         statusContainer.classList.remove('hidden');
         statusText.textContent = message;
     }
-
     function showError(message) {
         statusContainer.classList.remove('hidden');
         resultsContainer.classList.add('hidden');
         statusText.textContent = `Erro: ${message}`;
     }
-
     function showInfo(message) {
         statusContainer.classList.remove('hidden');
         resultsContainer.classList.add('hidden');
         statusText.textContent = message;
     }
-
     function displayResults(title, headers, data) {
         statusContainer.classList.add('hidden');
         resultsContainer.classList.remove('hidden');
         resultsTitle.textContent = title;
-
         const thead = resultsTable.querySelector('thead');
         const tbody = resultsTable.querySelector('tbody');
         thead.innerHTML = '';
         tbody.innerHTML = '';
-
         const headerRow = document.createElement('tr');
         headers.forEach(headerText => {
             const th = document.createElement('th');
@@ -122,13 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
             headerRow.appendChild(th);
         });
         thead.appendChild(headerRow);
-
         data.forEach(item => {
             const row = document.createElement('tr');
             headers.forEach(header => {
                 const td = document.createElement('td');
                 td.className = "px-6 py-4 whitespace-nowrap text-sm text-gray-700";
-                td.textContent = item[header] || '-';
+                td.textContent = item[header] !== undefined ? item[header] : '-';
                 row.appendChild(td);
             });
             tbody.appendChild(row);
